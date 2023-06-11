@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+
+  postgresql:
+    container_name: postgresql
+    build:
+      context: .
+      dockerfile: Dockerfile-db
+    restart: always
+    environment:
+      - PGDATA=var/lib/postgresql/data
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=koteika322
+      - POSTGRES_DB=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  app:
+    container_name: app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=****
+      - SPRING_DATASOURCE_PASSWORD=****
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create
+    depends_on:
+      - postgresql
+    restart: always
+    networks:
+      - app-network
+    volumes:
+      - logs:/logs
+
+volumes:
+  certbot-etc:
+  certbot-var:
+  web-root:
+  db-data:
+  logs:
+  dhparam:
+    driver: local
+    driver_opts:
+      type: none
+      device: /root/TP_project_backend/backend/dhparam/
+      o: bind
+
+networks:
+  app-network:
+    driver: bridge
